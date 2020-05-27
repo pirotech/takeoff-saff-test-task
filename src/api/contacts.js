@@ -1,8 +1,8 @@
 import instance from './index';
 
 const contactsApi = {
-  getContacts: () => {
-    return instance.get('/contacts');
+  getContacts: (q = '') => {
+    return instance.get(`/contacts?q=${q}`);
   },
   addContact: (name = '', phone = '') => {
     return instance.post('/contacts', {

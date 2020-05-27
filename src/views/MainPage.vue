@@ -118,7 +118,11 @@ export default {
   },
   methods: {
     onSearch(value) {
-      console.log(value);
+      contactsApi.getContacts(value).then(response => {
+        this.contacts = response.data;
+      }).catch(error => {
+        console.error(error);
+      });
     },
 
     showCreateNewModal() {
