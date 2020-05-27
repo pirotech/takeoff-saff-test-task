@@ -1,5 +1,12 @@
 {
   "auth": {
     "token": "12345"
-  }
+  },
+  "contacts": [
+    {
+      "id": 0,
+      "name": "John Doe",
+      "phone": "8 999 666-77-88"
+    }
+  ]
 }
