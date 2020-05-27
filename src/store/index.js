@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import authApi from '../api/auth';
 Vue.use(Vuex);
 
 const token = localStorage.getItem('token');
@@ -17,25 +18,24 @@ const store = new Vuex.Store({
   },
   mutations: {
     [LOGIN]: (state, payload) => {
-      console.log('hello');
-      const { username, password } = payload;
-      if (!!username && !!password) {
-        const token = '12345';
-        localStorage.setItem('token', token);
-        state.token = token;
-      }
+      const { token } = payload;
+      localStorage.setItem('token', token);
+      state.token = token;
     }
   },
   actions: {
     [LOGIN]: ({commit}, payload) => {
-      setTimeout(() => {
-        const { username, password } = payload;
+      const { username, password } = payload;
+
+      authApi.login(username, password).then(response => {
+        const { token } = response.data;
         commit({
           type: LOGIN,
-          username,
-          password
+          token
         });
-      }, 1000);
+      }).catch(error => {
+        console.error(error);
+      });
     }
   }
 });
