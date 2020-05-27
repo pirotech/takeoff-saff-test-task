@@ -43,8 +43,8 @@
       title="Create new"
       :visible="createNew.modal"
       :confirm-loading="createNew.loading"
-      @ok="handleOk"
-      @cancel="handleCancel"
+      @ok="createNewModalHandleOk"
+      @cancel="createNewModalHandleCancel"
     >
       <a-form :form="createNew.form" :rules="createNew.rules">
         <a-form-item label="Name" required>
@@ -90,7 +90,7 @@ export default {
     showCreateNewModal() {
       this.createNew.modal = true;
     },
-    handleOk() {
+    createNewModalHandleOk() {
       this.createNew.form.validateFields((errors, values) => {
         if (!errors) {
           this.createNew.loading = true;
@@ -99,13 +99,14 @@ export default {
             this.contacts.push(response.data);
             this.createNew.modal = false;
             this.createNew.loading = false;
+            this.createNew.form.resetFields();
           }).catch(error => {
             console.error(error);
           });
         }
       });
     },
-    handleCancel() {
+    createNewModalHandleCancel() {
       this.createNew.modal = false;
       this.createNew.form.resetFields();
     },
