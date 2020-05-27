@@ -23,6 +23,7 @@
               <a-list-item-meta :description="item.phone">
                 <p slot="title">{{item.name}}</p>
               </a-list-item-meta>
+              <a-button class="mr-12" type="primary" @click="showEditModal(item)">Edit</a-button>
               <a-button type="danger" @click="removeContact(item)">Remove</a-button>
             </a-list-item>
             <div slot="footer">
@@ -55,11 +56,28 @@
         </a-form-item>
       </a-form>
     </a-modal>
+
+    <a-modal
+      title="Edit"
+      :visible="edit.modal"
+      :confirm-loading="edit.loading"
+      @ok="editModalHandleOk"
+      @cancel="editModalHandleCancel"
+    >
+      <a-form :form="edit.form" :rules="edit.rules">
+        <a-form-item label="Name" required>
+          <a-input v-decorator="edit.decorators.name"></a-input>
+        </a-form-item>
+        <a-form-item label="Phone" required>
+          <a-input v-decorator="edit.decorators.phone"></a-input>
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </a-layout>
 </template>
 
 <script>
-import contactsApi from "../api/contacts";
+import contactsApi from '../api/contacts';
 
 export default {
   name: 'MainPage',
@@ -80,6 +98,21 @@ export default {
             { rules: [{required: true, message: 'Phone is required!'}] }
           ]
         }
+      },
+      edit: {
+        modal: false,
+        loading: false,
+        form: this.$form.createForm(this, {name: 'editForm'}),
+        decorators: {
+          name: [
+            'name',
+            { rules: [{required: true, message: 'Name is required!'}] }
+          ],
+          phone: [
+            'phone',
+            { rules: [{required: true, message: 'Phone is required!'}] }
+          ]
+        }
       }
     };
   },
@@ -87,6 +120,7 @@ export default {
     onSearch(value) {
       console.log(value);
     },
+
     showCreateNewModal() {
       this.createNew.modal = true;
     },
@@ -108,8 +142,10 @@ export default {
     },
     createNewModalHandleCancel() {
       this.createNew.modal = false;
+      this.createNew.loading = false;
       this.createNew.form.resetFields();
     },
+
     removeContact(removed) {
       this.$confirm({
         title: 'Remove contact',
@@ -120,11 +156,50 @@ export default {
     },
     removeModalHandleOk(removed) {
       contactsApi.removeContact(removed).then(() => {
-        this.contacts = this.contacts.filter(item => item.id === removed.id);
+        this.contacts = this.contacts.filter(item => item.id !== removed.id);
       }).catch(error => {
         console.error(error);
       })
-    }
+    },
+
+    showEditModal(edited) {
+      const { id, name, phone } = edited;
+      this.edit.modal = true;
+      this.edit.id = id;
+      this.$nextTick(() => {
+        this.edit.form.setFieldsValue({name, phone});
+      });
+    },
+    editModalHandleOk() {
+      this.edit.form.validateFields((errors, values) => {
+        if (!errors) {
+          this.edit.loading = true;
+          const { name, phone } = values;
+          const edited = {
+            id: this.edit.id,
+            name,
+            phone
+          };
+          contactsApi.editContact(edited).then(response => {
+            this.contacts = this.contacts.map(item => (
+              item.id === edited.id
+                ? response.data
+                : item
+            ));
+            this.edit.modal = false;
+            this.edit.loading = false;
+            this.edit.form.resetFields();
+          }).catch(error => {
+            console.error(error);
+          });
+        }
+      });
+    },
+    editModalHandleCancel() {
+      this.edit.modal = false;
+      this.edit.loading = false;
+      this.edit.form.resetFields();
+    },
   },
   created() {
     contactsApi.getContacts().then(result => {
@@ -158,6 +233,9 @@ export default {
     &-search {
       margin-bottom: 16px;
     }
+  }
+  .mr-12 {
+    margin-right: 12px;
   }
 }
 </style>

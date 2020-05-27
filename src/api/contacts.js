@@ -13,6 +13,9 @@ const contactsApi = {
   },
   removeContact: (item) => {
     return instance.delete(`/contacts/${item.id}`);
+  },
+  editContact: (item) => {
+    return instance.put(`/contacts/${item.id}`, item);
   }
 };
 

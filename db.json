@@ -4,9 +4,9 @@
   },
   "contacts": [
     {
-      "id": 739,
-      "name": "Sergey",
-      "phone": "Phone"
+      "id": 0,
+      "name": "John Doe",
+      "phone": "8 999 666-77-88"
     }
   ]
 }
