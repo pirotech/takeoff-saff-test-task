@@ -5,9 +5,10 @@
     </a-layout-header>
     <a-layout-content class="main-page-content">
       <a-card>
-        <a-row>
+        <a-row :gutter="[32, 32]">
           <a-col :span="12" :offset="6">
             <a-input-search
+              class="main-page-search"
               placeholder="Search"
               enter-button="Search"
               size="large"
@@ -17,12 +18,18 @@
           </a-col>
         </a-row>
         <a-row>
-          <a-list :data-source="contacts">
+          <a-list bordered :data-source="contacts">
             <a-list-item slot="renderItem" slot-scope="item, index">
               <a-list-item-meta :description="item.phone">
                 <p slot="title">{{item.name}}</p>
               </a-list-item-meta>
             </a-list-item>
+            <div slot="footer">
+              <a-button
+                type="primary"
+                @click="showCreateNewModal"
+              >Create new</a-button>
+            </div>
           </a-list>
         </a-row>
       </a-card>
@@ -30,6 +37,23 @@
     <a-layout-footer>
       No name company &copy; 2020
     </a-layout-footer>
+
+    <a-modal
+      title="Create new"
+      :visible="createNew.modal"
+      :confirm-loading="createNew.loading"
+      @ok="handleOk"
+      @cancel="handleCancel"
+    >
+      <a-form :form="createNew.form" :rules="createNew.rules">
+        <a-form-item label="Name" required>
+          <a-input v-decorator="createNew.decorators.name"></a-input>
+        </a-form-item>
+        <a-form-item label="Phone" required>
+          <a-input v-decorator="createNew.decorators.phone"></a-input>
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </a-layout>
 </template>
 
@@ -40,13 +64,50 @@ export default {
   name: 'MainPage',
   data() {
     return {
-      contacts: []
+      contacts: [],
+      createNew: {
+        modal: false,
+        loading: false,
+        form: this.$form.createForm(this, {name: 'createForm'}),
+        decorators: {
+          name: [
+            'name',
+            { rules: [{required: true, message: 'Name is required!'}] }
+          ],
+          phone: [
+            'phone',
+            { rules: [{required: true, message: 'Phone is required!'}] }
+          ]
+        }
+      }
     };
   },
   methods: {
     onSearch(value) {
       console.log(value);
-    }
+    },
+    showCreateNewModal() {
+      this.createNew.modal = true;
+    },
+    handleOk() {
+      this.createNew.form.validateFields((errors, values) => {
+        if (!errors) {
+          this.createNew.loading = true;
+          const { name, phone } = values;
+          contactsApi.addContact(name, phone).then(response => {
+            this.contacts.push(response.data);
+            this.createNew.modal = false;
+            this.createNew.loading = false;
+          }).catch(error => {
+            console.error(error);
+          });
+        }
+      });
+    },
+    handleCancel() {
+      this.createNew.modal = false;
+      this.createNew.form.resetFields();
+    },
   },
   created() {
     contactsApi.getContacts().then(result => {
@@ -76,6 +137,9 @@ export default {
     &-wrapper {
       background-color: white;
       border-radius: 2px;
+    }
+    &-search {
+      margin-bottom: 16px;
     }
   }
 }
