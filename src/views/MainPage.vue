@@ -18,11 +18,12 @@
           </a-col>
         </a-row>
         <a-row>
-          <a-list bordered :data-source="contacts">
+          <a-list v-if="contacts" bordered :data-source="contacts">
             <a-list-item slot="renderItem" slot-scope="item, index">
               <a-list-item-meta :description="item.phone">
                 <p slot="title">{{item.name}}</p>
               </a-list-item-meta>
+              <a-button type="danger" @click="removeContact(item)">Remove</a-button>
             </a-list-item>
             <div slot="footer">
               <a-button
@@ -108,6 +109,21 @@ export default {
       this.createNew.modal = false;
       this.createNew.form.resetFields();
     },
+    removeContact(removed) {
+      this.$confirm({
+        title: 'Remove contact',
+        content: 'Are you sure want to remove contact?',
+        onOk: () => this.removeModalHandleOk(removed),
+        onCancel() {}
+      });
+    },
+    removeModalHandleOk(removed) {
+      contactsApi.removeContact(removed).then(() => {
+        this.contacts = this.contacts.filter(item => item.id === removed.id);
+      }).catch(error => {
+        console.error(error);
+      })
+    }
   },
   created() {
     contactsApi.getContacts().then(result => {

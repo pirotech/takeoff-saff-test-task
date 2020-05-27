@@ -10,6 +10,9 @@ const contactsApi = {
       name,
       phone,
     });
+  },
+  removeContact: (item) => {
+    return instance.delete(`/contacts/${item.id}`);
   }
 };
 
