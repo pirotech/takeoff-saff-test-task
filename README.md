@@ -1,2 +1,6 @@
-# takeoff-saff-test-task
-Takeoff Saff test task
+# Решение тестового задания Takeoff Saff
+
+#### Инструкция запуска
+ - `npm i` - установить зависимости
+ - `npm run backend` - запустить сервер с имитацией бекенда
+ - `npm run serve` - запустить приложение
